@@ -9,6 +9,7 @@ import statsmodels.formula.api as sm
 import lightgbm as lgb
 import xgboost as xgb
 import matplotlib.ticker as ticker
+import sys
 from sklearn.cross_validation import train_test_split
 from sklearn.linear_model import LinearRegression , Ridge , Lasso , BayesianRidge
 from sklearn.kernel_ridge import KernelRidge
@@ -225,24 +226,70 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, test_
 
 cv = ShuffleSplit(X_train.shape[0], n_iter=10, test_size=0.2)
 
-def hyperparameterTuning(estimator,param_grid,cv,n_jobs=4): 
+def hyperparameterTuning(estimator,param_grid,cv,n_jobs=7): 
     classifier = GridSearchCV(estimator=estimator, cv=cv, param_grid=param_grid, n_jobs=n_jobs,verbose=1)
     classifier.fit(X_train, y_train)
     print("Best Estimator learned through GridSearch")
     print(classifier.best_estimator_)
     return classifier.best_estimator_
 
-
+arguments = sys.argv[1:]
+print(arguments)
 # Improving Gradient Boosting
+if(arguments[0] == '1'):
+    param_grid={'n_estimators':[x for x in range(100,3000,500)],
+                'learning_rate': [x/100.0 for x in range(1, 11)],
+                'max_depth':[x for x in range(1,11)],
+                'min_samples_leaf':[x for x in range(1,11)],
+                'max_features':[x/10.0 for x in range(1,11)],
+            }
 
-param_grid={'n_estimators':[120],#x for x in range(100,3000,100)],
-            'learning_rate': [0.05], #x/100.0 for x in range(1, 11)],
-            'max_depth':[3], #x for x in range(1,10)],
-            'min_samples_leaf':[6],#x for x in range(1,11)],
-            'max_features':[1.0],
+    estimator = GradientBoostingRegressor()
+    best_est = hyperparameterTuning(estimator,param_grid,cv)
+
+    pickle.dump(best_est, open("GradientBoostingEstimator_odd.p", "wb"))
+elif(arguments[0] == '2'):
+    param_grid={'n_estimators':[x for x in range(200,3000,500)],
+                'learning_rate': [x/100.0 for x in range(1, 11)],
+                'max_depth':[x for x in range(1,11)],
+                'min_samples_leaf':[x for x in range(1,11)],
+                'max_features':[x/10.0 for x in range(1,11)],
+            }
+
+    estimator = GradientBoostingRegressor()
+    best_est = hyperparameterTuning(estimator,param_grid,cv)
+
+    pickle.dump(best_est, open("GradientBoostingEstimator_even.p", "wb"))
+
+elif(arguments[0] == '3'):
+    param_grid={'learning_rate': [0.05, 0.02, 0.01],
+            'max_depth':[4,6,8],
+            'gamma':[0.01,0.04,0.08,0.12], 
+            'subsample':[0.5,0.75,1],
+            'colsample_bytree':[0.5,0.75,1],
+            'reg_alpha':[0.001,0.01,0.1],
+            'reg_lambda':[0.001,0.01,0.1],
+            'n_estimators':[2000,3000]
            }
+    
+    model_xgb = xgb.XGBRegressor()
+    best_est = hyperparameterTuning(model_xgb,param_grid,cv)
 
-estimator = GradientBoostingRegressor()
-best_est = hyperparameterTuning(estimator,param_grid,cv)
+    pickle.dump(best_est, open( "XGBoostBestEstimator.p", "wb" ))
+elif(arguments[0] == '4'):
 
-pickle.dump(best_est, open("GradientBoostingEstimator.p", "wb"))
+    param_grid={'n_estimators': [x for x in range(500,5001,500)],
+                'max_bin': [x for x in range(50,150,10)],
+                'learning_rate': [x/10.0 for x in range(1,6)],
+                'num_iterations': [x for x in range(100,1001,100)],
+                'num_leaves': [x for x in range(2,6)],
+                'max_depth': [x for x in range(4,13)]
+           }
+           
+    model_lgb = lgb.LGBMRegressor()
+    best_est = hyperparameterTuning(model_lgb,param_grid,cv)
+
+    pickle.dump(best_est, open( "LightGBMBestEstimator.p", "wb" ))
+
+else:
+    print("ERROR! Invalid job")
