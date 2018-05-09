@@ -238,28 +238,28 @@ print(arguments)
 # Improving Gradient Boosting
 if(arguments[0] == '1'):
     param_grid={'n_estimators':[x for x in range(100,3000,500)],
-                'learning_rate': [x/100.0 for x in range(1, 11)],
-                'max_depth':[x for x in range(1,11)],
-                'min_samples_leaf':[x for x in range(1,11)],
-                'max_features':[x/10.0 for x in range(1,11)],
+                'learning_rate': [x/100.0 for x in range(1, 6)],
+                'max_depth':[x for x in range(1,6)],
+                'min_samples_leaf':[x for x in range(1,6)],
+                'max_features':[x/10.0 for x in range(1,6)],
             }
 
     estimator = GradientBoostingRegressor()
     best_est = hyperparameterTuning(estimator,param_grid,cv)
 
-    pickle.dump(best_est, open("GradientBoostingEstimator_odd.p", "wb"))
+    pickle.dump(best_est, open("GradientBoostingEstimator_odd_optim.p", "wb"))
 elif(arguments[0] == '2'):
     param_grid={'n_estimators':[x for x in range(200,3000,500)],
-                'learning_rate': [x/100.0 for x in range(1, 11)],
-                'max_depth':[x for x in range(1,11)],
-                'min_samples_leaf':[x for x in range(1,11)],
-                'max_features':[x/10.0 for x in range(1,11)],
+                'learning_rate': [x/100.0 for x in range(1, 6)],
+                'max_depth':[x for x in range(1,6)],
+                'min_samples_leaf':[x for x in range(1,6)],
+                'max_features':[x/10.0 for x in range(1,6)],
             }
 
     estimator = GradientBoostingRegressor()
     best_est = hyperparameterTuning(estimator,param_grid,cv)
 
-    pickle.dump(best_est, open("GradientBoostingEstimator_even.p", "wb"))
+    pickle.dump(best_est, open("GradientBoostingEstimator_even_optim.p", "wb"))
 
 elif(arguments[0] == '3'):
     param_grid={'learning_rate': [0.05, 0.02, 0.01],
@@ -275,21 +275,36 @@ elif(arguments[0] == '3'):
     model_xgb = xgb.XGBRegressor()
     best_est = hyperparameterTuning(model_xgb,param_grid,cv)
 
-    pickle.dump(best_est, open( "XGBoostBestEstimator.p", "wb" ))
+    pickle.dump(best_est, open( "XGBoostBestEstimator_optim.p", "wb" ))
 elif(arguments[0] == '4'):
 
-    param_grid={'n_estimators': [x for x in range(500,5001,500)],
-                'max_bin': [x for x in range(50,150,10)],
+    param_grid={'n_estimators': [x for x in range(500,5501,1000)],
+                'max_bin': [x for x in range(50,150,20)],
                 'learning_rate': [x/10.0 for x in range(1,6)],
-                'num_iterations': [x for x in range(100,1001,100)],
+                'num_iterations': [x for x in range(100,1001,200)],
                 'num_leaves': [x for x in range(2,6)],
-                'max_depth': [x for x in range(4,13)]
+                'max_depth': [x for x in range(4,10)]
            }
            
     model_lgb = lgb.LGBMRegressor()
     best_est = hyperparameterTuning(model_lgb,param_grid,cv)
 
-    pickle.dump(best_est, open( "LightGBMBestEstimator.p", "wb" ))
+    pickle.dump(best_est, open( "LightGBMBestEstimator_optim.p", "wb" ))
 
+elif(arguments[0] == '5'):
+    param_grid={'learning_rate': [0.05],
+            'max_depth':[4,6,8],
+            'gamma':[0.01], 
+            'subsample':[0.5],
+            'colsample_bytree':[0.5],
+            'reg_alpha':[0.001],
+            'reg_lambda':[0.001],
+            'n_estimators':[2000]
+           }
+    
+    model_xgb = xgb.XGBRegressor()
+    best_est = hyperparameterTuning(model_xgb,param_grid,cv)
+
+    pickle.dump(best_est, open( "XGBoostBestEstimator_test.p", "wb" ))
 else:
     print("ERROR! Invalid job")
